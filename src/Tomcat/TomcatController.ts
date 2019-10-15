@@ -20,9 +20,9 @@ import { TomcatServer } from "./TomcatServer";
 import { WarPackage } from "./WarPackage";
 
 export class TomcatController {
-<<<<<<< HEAD
     private _outputChannel: vscode.OutputChannel;
     private _javaExec: string = 'java';
+    private _jarPath: string = 'jar';
 
     constructor(private _tomcatModel: TomcatModel, private _extensionPath: string) {
 		this._outputChannel = vscode.window.createOutputChannel('vscode-tomcat');
@@ -32,6 +32,7 @@ export class TomcatController {
             // tslint:disable-next-line:no-backbone-get-set-outside-model
             const javaHome: string = vscode.workspace.getConfiguration('java').get('home') ;
             this._javaExec = `${javaHome}/bin/java` ;
+            this._jarPath = `${javaHome}/bin/jar` ;
         }
     }
 
@@ -262,7 +263,7 @@ export class TomcatController {
                 });
             }
             await Promise.all(items.map((i: vscode.QuickPickItem) => {
-                return Utility.executeCMD(this._outputChannel, undefined, 'jar', { cwd: i.description, shell: true }, 'cvf', ...[`"${i.label}.war"`, '*']);
+                return Utility.executeCMD(this._outputChannel, undefined, this._jarPath, { cwd: i.description, shell: true }, 'cvf', ...[`"${i.label}.war"`, '*']);
             }));
             vscode.window.showInformationMessage(DialogMessage.getWarGeneratedInfo(items.length));
         }
@@ -359,7 +360,7 @@ export class TomcatController {
         await fse.mkdirs(appPath);
         if (this.isWarFile(webappPath)) {
             Utility.trackTelemetryStep('deploy war');
-            await Utility.executeCMD(this._outputChannel, server.getName(), 'jar', { cwd: appPath }, 'xvf', `${webappPath}`);
+            await Utility.executeCMD(this._outputChannel, server.getName(), this._jarPath, { cwd: appPath }, 'xvf', `${webappPath}`);
         } else {
             Utility.trackTelemetryStep('deploy web app folder');
             await fse.copy(webappPath, appPath);
@@ -380,7 +381,7 @@ export class TomcatController {
             folderLocation = path.join(this._tomcatModel.defaultStoragePath, defaultName);
             await fse.remove(folderLocation);
             await fse.mkdir(folderLocation);
-            await Utility.executeCMD(this._outputChannel, server.getName(), 'jar', { cwd: folderLocation }, 'xvf', `${webappPath}`);
+            await Utility.executeCMD(this._outputChannel, server.getName(), this._jarPath, { cwd: folderLocation }, 'xvf', `${webappPath}`);
         } else {
             folderLocation = webappPath;
         }
